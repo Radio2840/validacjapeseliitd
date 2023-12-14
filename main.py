@@ -5,15 +5,23 @@ import re
 from layout import Ui_Dialog
 
 
+
 class Myform(QDialog):
+    isValid = True
     def __init__(self):
         super().__init__()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.show()
-        self.ui.saveButton.clicked.connect(self.validation)
+        self.ui.saveButton.clicked.connect(self.saveToComboBox)
         self.ui.saveToFileButton.clicked.connect(self.saveToFile)
-
+    def allert(self):
+        self.isValid = False
+        alert = QMessageBox()
+        alert.setWindowTitle("Błąd")
+        alert.setInformativeText("Nieprawidłowe dane spróbój ponownie")
+        alert.setStandardButtons(QMessageBox.StandardButton.Ok)
+        alert.exec()
 
     def validation(self):
         suma = 0
@@ -23,35 +31,21 @@ class Myform(QDialog):
         phoneNumber = self.ui.PhoneValue.text()
         peselNumber = self.ui.peselValue.text()
         if len(name) == 0 or len(secondName) == 0:
-            alert = QMessageBox()
-            alert.setWindowTitle("Błąd")
-            alert.setInformativeText("nieprawidłowy niepoprawne imie lub nazwisko")
-            alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-            alert.exec()
+            self.allert()
         if len(phoneNumber) ==9:
             try:
                 phoneNumber = int(phoneNumber)
+                self.isValid = True
             except:
-                alert = QMessageBox()
-                alert.setWindowTitle("Błąd")
-                alert.setInformativeText("nieprawidłowy numer telefonu")
-                alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-                alert.exec()
+                self.allert()
         else:
-            alert = QMessageBox()
-            alert.setWindowTitle("Błąd")
-            alert.setInformativeText("nieprawidłowy numer telefonu")
-            alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-            alert.exec()
+            self.allert()
         if len(peselNumber) == 11:
             try:
                 int(peselNumber)
+                self.isValid = True
             except:
-                alert = QMessageBox()
-                alert.setWindowTitle("Błąd")
-                alert.setInformativeText("nieprawidłowy PESEL")
-                alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-                alert.exec()
+                self.allert()
 
 
             for i in range(11):
@@ -63,27 +57,32 @@ class Myform(QDialog):
             if suma % 10 ==0:
                 pass
             else:
-                alert = QMessageBox()
-                alert.setWindowTitle("Błąd")
-                alert.setInformativeText("nieprawidłowy PESEL")
-                alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-                alert.exec()
+                self.allert()
 
         else:
-            alert = QMessageBox()
-            alert.setWindowTitle("Błąd")
-            alert.setInformativeText("nieprawidłowy PESEL")
-            alert.setStandardButtons(QMessageBox.StandardButton.Ok)
-            alert.exec()
+            self.allert()
     def saveToFile(self):
-        name = self.ui.nameValue.text()
-        secondName = self.ui.secondNameValue.text()
-        data_to_save = name + " "+ secondName
-        self.ui.lista.addItem(data_to_save)
-        filename = "imie_nazwisko.txt"
-        with open(filename,'w') as plik:
-            plik.write(data_to_save)
-
+        self.validation()
+        if self.isValid == True:
+            name = self.ui.nameValue.text()
+            secondName = self.ui.secondNameValue.text()
+            phoneNumber = self.ui.PhoneValue.text()
+            peselNumber = self.ui.peselValue.text()
+            checkBoxValue = self.ui.typeCheckBox.isChecked()
+            if checkBoxValue == True:
+                data_to_save = f"Imie: {name}\nNazwisko: {secondName}\nNumer telefonu: {phoneNumber}\nPESEL: {peselNumber}\nCzy Umowa o prace: TAK\n"
+            else:
+                data_to_save = f"Imie: {name}\nNazwisko: {secondName}\nNumer telefonu: {phoneNumber}\nPESEL: {peselNumber}\nCzy Umowa o prace: NIE\n"
+            filename = "imie_nazwisko.txt"
+            with open(filename,'a') as plik:
+                plik.write(data_to_save)
+    def saveToComboBox(self):
+        self.validation()
+        if self.isValid == True:
+            name = self.ui.nameValue.text()
+            secondName = self.ui.secondNameValue.text()
+            data_to_save = f"{name} {secondName}"
+            self.ui.lista.addItem(data_to_save)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
